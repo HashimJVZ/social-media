@@ -21,7 +21,7 @@ def client() -> Generator:
 @pytest.fixture(autouse=True)
 async def db() -> AsyncGenerator:
     post_table.clear()
-    comment_table.clear
+    comment_table.clear()
     yield
 
 
