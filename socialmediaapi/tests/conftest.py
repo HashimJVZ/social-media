@@ -2,14 +2,13 @@ from typing import AsyncGenerator, Generator
 
 import pytest
 from fastapi.testclient import TestClient
-
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 
 from socialmediaapi.main import app
 from socialmediaapi.routers.post import comment_table, post_table
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def anyio_backend():
     return "asyncio"
 
@@ -19,7 +18,7 @@ def client() -> Generator:
     yield TestClient(app)
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
 async def db() -> AsyncGenerator:
     post_table.clear()
     comment_table.clear
@@ -28,5 +27,7 @@ async def db() -> AsyncGenerator:
 
 @pytest.fixture()
 async def async_client(client) -> AsyncGenerator:
-    async with AsyncClient(app=app, base_url=client.base_url) as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url=client.base_url
+    ) as ac:
         yield ac
